@@ -1,12 +1,12 @@
 #!/bin/sh
 
-OUTPUT=$(sfdisk -lJ ${RASPIOS})
+OUTPUT=$(sfdisk -lJ ${RASPIOS}.img)
 BOOT_START=$(echo $OUTPUT | jq -r '.partitiontable.partitions[0].start')
 BOOT_SIZE=$(echo $OUTPUT | jq -r '.partitiontable.partitions[0].size')
 EXT4_START=$(echo $OUTPUT | jq -r '.partitiontable.partitions[1].start')
 
-mount -t ext4 -o loop,offset=$(($EXT4_START*512)) ${RASPIOS} /raspios/mnt/disk
-mount -t vfat -o loop,offset=$(($BOOT_START*512)),sizelimit=$(($BOOT_SIZE*512)) ${RASPIOS} /raspios/mnt/boot/firmware
+mount -t ext4 -o loop,offset=$(($EXT4_START*512)) ${RASPIOS}.img /raspios/mnt/disk
+mount -t vfat -o loop,offset=$(($BOOT_START*512)),sizelimit=$(($BOOT_SIZE*512)) ${RASPIOS}.img /raspios/mnt/boot/firmware
 
 cd /rpi-kernel/linux/
 make INSTALL_MOD_PATH=/raspios/mnt/disk modules_install
@@ -36,4 +36,4 @@ umount /raspios/mnt/disk
 umount /raspios/mnt/boot/firmware
 
 mkdir build
-zip build/${RASPIOS}-${TARGET}.zip ${RASPIOS}
+zip build/${RASPIOS}.img-${TARGET}.zip ${RASPIOS}.img

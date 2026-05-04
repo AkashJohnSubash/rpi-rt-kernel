@@ -42,8 +42,8 @@ RUN [ "$ARCH" = "arm" ] && ./scripts/config --enable CONFIG_SMP || true
 RUN [ "$ARCH" = "arm" ] && ./scripts/config --disable CONFIG_BROKEN_ON_SMP || true
 RUN ./scripts/config --set-val CONFIG_RCU_BOOST_DELAY 500
 
-RUN [ "$ARCH" = "arm64" ] && make -j6 Image.gz modules dtbs || true
-RUN [ "$ARCH" = "arm" ] && make -j6 zImage modules dtbs || true
+RUN [ "$ARCH" = "arm64" ] && make -j($nproc) Image.gz modules dtbs || true
+RUN [ "$ARCH" = "arm" ] && make -j($nproc) zImage modules dtbs || true
 
 RUN echo "using raspberry pi image ${RASPIOS}"
 WORKDIR /raspios
@@ -52,7 +52,7 @@ RUN export DATE=$(curl -s https://downloads.raspberrypi.org/${RASPIOS}/images/ |
     export RASPIOS_IMAGE_NAME=$(curl -s https://downloads.raspberrypi.org/${RASPIOS}/images/${RASPIOS}-${DATE}/ | sed -n "s:.*<a href=\"\(.*img\).xz\">.*:\1:p" | tail -1) && \
     echo "Downloading ${RASPIOS_IMAGE_NAME}.xz" && \
     curl https://downloads.raspberrypi.org/${RASPIOS}/images/${RASPIOS}-${DATE}/${RASPIOS_IMAGE_NAME}.xz --output ${RASPIOS}.xz && \
-    xz -d ${RASPIOS}.xz
+    xz -d -c ${RASPIOS}.xz > ${RASPIOS}.img
 
 RUN mkdir /raspios/mnt && mkdir /raspios/mnt/disk && mkdir /raspios/mnt/boot && mkdir /raspios/mnt/boot/firmware
 ADD build.sh ./build.sh
